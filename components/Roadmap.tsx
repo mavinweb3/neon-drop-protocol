@@ -15,10 +15,11 @@ export default function Roadmap() {
   const trackRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
+  const maskRef = useRef<HTMLDivElement>(null);
   const laser1Ref = useRef<HTMLDivElement>(null);
   const laser2Ref = useRef<HTMLDivElement>(null);
   const ctaWrapperRef = useRef<HTMLDivElement>(null);
-  
+
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const plugsRef = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -64,6 +65,20 @@ export default function Roadmap() {
 
     setHorizontalTween(ht);
 
+    // 1B. TRANSLATE WORLD ORIGIN (Parallax world background to the left)
+    // The vertical line, node, header, and the optical mask "stay where they are" in the physical world
+    gsap.to(['.global-power-line', '.global-power-bg', headerRef.current, nodeRef.current, maskRef.current], {
+      x: () => -getPanWidth(),
+      ease: "none",
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: "top top",
+        end: () => `+=${getPanWidth()}`,
+        scrub: 1,
+        invalidateOnRefresh: true,
+      }
+    });
+
     // 2. LASER PHASE 1: The "Read Head" (Shoots from left edge to center)
     gsap.fromTo(laser1Ref.current,
       { scaleX: 0 },
@@ -103,7 +118,7 @@ export default function Roadmap() {
         scrollTrigger: {
           trigger: card,
           containerAnimation: ht,
-          start: "center center", 
+          start: "center center",
           toggleActions: "play none none reverse",
         }
       });
@@ -128,32 +143,17 @@ export default function Roadmap() {
       });
     }
 
-    // 5. FADE OUT ROADMAP UI WHEN CTA ENTERS
-    if (ctaWrapperRef.current && headerRef.current && nodeRef.current) {
-      gsap.to([headerRef.current, nodeRef.current], {
-        opacity: 0,
-        ease: "power2.inOut",
-        scrollTrigger: {
-          trigger: ctaWrapperRef.current,
-          containerAnimation: ht,
-          start: "left 90%", // Start fading when CTA is 10vw into the screen
-          end: "left 50%", // Fully hid when CTA hits center
-          scrub: true,
-        }
-      });
-    }
-
-  }, { scope: sectionRef });
+  }, { dependencies: [] });
 
   return (
-    <section 
-      ref={sectionRef} 
+    <section
+      ref={sectionRef}
       className="relative z-10 w-full h-screen bg-[#050505] overflow-hidden flex flex-col"
     >
       {/* ── HEADER ── */}
       <div ref={headerRef} className="absolute top-12 md:top-24 left-20 lg:left-28 z-20 pointer-events-none">
         <h2 className="text-4xl md:text-6xl font-geist font-bold text-white tracking-tighter opacity-90 drop-shadow-[0_0_15px_rgba(57,255,20,0.15)] leading-[1.1]">
-          EXECUTION<br/>ROADMAP
+          EXECUTION<br />ROADMAP
         </h2>
         <div className="mt-4 flex items-center gap-3">
           <div className="h-[1px] w-12 bg-[#39FF14]" />
@@ -162,23 +162,26 @@ export default function Roadmap() {
       </div>
 
       {/* ── TWO-PART HORIZONTAL LASER ── */}
+      {/* Optical Mask to hide laser origin behind the vertical line, translating left to reveal the laser */}
+      <div ref={maskRef} className="absolute top-1/2 left-0 w-8 lg:w-16 h-[20px] bg-[#050505] z-[5] -translate-y-1/2" />
+
       {/* Background track (extends full width to the right) */}
-      <div className="absolute top-1/2 left-8 lg:left-16 right-0 h-[2px] bg-[#39FF14]/10 z-0 -translate-y-1/2" />
-      
+      <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-[#39FF14]/10 z-0 -translate-y-1/2" />
+
       {/* Laser 1: From left offset to center (The "Read Head") */}
-      <div 
+      <div
         ref={laser1Ref}
-        className="roadmap-laser-1 absolute top-1/2 left-8 lg:left-16 w-[calc(50%-2rem)] lg:w-[calc(50%-4rem)] h-[2px] bg-[#39FF14] shadow-[0_0_15px_#39FF14] origin-left z-0 -translate-y-1/2" 
-        style={{ transform: 'scaleX(0)' }} 
+        className="roadmap-laser-1 absolute top-1/2 left-0 w-[50vw] h-[2px] bg-[#39FF14] shadow-[0_0_15px_#39FF14] origin-left z-0 -translate-y-1/2"
+        style={{ transform: 'scaleX(0)' }}
       />
-      
+
       {/* Laser 2: From center to right edge (Extends after Phase 06) */}
-      <div 
+      <div
         ref={laser2Ref}
-        className="roadmap-laser-2 absolute top-1/2 left-1/2 right-0 h-[2px] bg-[#39FF14] shadow-[0_0_15px_#39FF14] origin-left z-0 -translate-y-1/2" 
-        style={{ transform: 'scaleX(0)' }} 
+        className="roadmap-laser-2 absolute top-1/2 left-1/2 right-0 h-[2px] bg-[#39FF14] shadow-[0_0_15px_#39FF14] origin-left z-0 -translate-y-1/2"
+        style={{ transform: 'scaleX(0)' }}
       />
-      
+
       {/* Global Conduit Checkpoint Node */}
       <div ref={nodeRef} className="hidden md:block absolute left-[calc(2rem-4px)] lg:left-[calc(4rem-4px)] top-1/2 -translate-y-[4px] w-[10px] h-[10px] rounded-full bg-[#050505] border border-white/20 z-20" />
 
@@ -188,19 +191,19 @@ export default function Roadmap() {
         It naturally gives the laser 50vw of space to animate while Phase 06 exits, 
         and then perfectly reveals TerminalCTA.
       */}
-      <div 
-        ref={trackRef} 
+      <div
+        ref={trackRef}
         className="absolute top-1/2 left-0 w-max h-auto flex flex-row items-start gap-12 pl-[100vw] z-10"
       >
         {roadmapData.map((card, index) => (
           <div key={card.id} className="relative flex flex-col items-center w-[320px] md:w-[400px]">
             {/* The Circuit Plug */}
-            <div 
+            <div
               ref={(el) => { plugsRef.current[index] = el; }}
-              className="w-[2px] h-[60px]" 
+              className="w-[2px] h-[60px]"
             />
             {/* The Phase Card */}
-            <div 
+            <div
               ref={(el) => { cardsRef.current[index] = el; }}
               className="w-full bg-[#080808] border border-white/5 p-8 rounded-sm text-left backdrop-blur-sm shadow-[0_4px_30px_rgba(0,0,0,0.8)]"
             >

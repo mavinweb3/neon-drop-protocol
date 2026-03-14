@@ -2,127 +2,18 @@
 
 ---
 
+## 2026-03-14T22:45:00+08:00 — World Coordinate Parallax Translation (Roadmap Setup)
+
+### Files Modified
+- `components/GlobalConduit.tsx` — Added `.global-power-bg` class to the vertical track line to enable targeted sub-component animations.
+- `components/Roadmap.tsx` — Addressed a visual continuity flaw where the globally fixed `GlobalConduit` line remained statically rooted in the viewport during horizontal panning. Attached a synchronized GSAP `x: () => -getPanWidth()` tween to the vertical origin pieces (`.global-power-line`, `.global-power-bg`, `nodeRef`, and `headerRef`). As the user scrolls horizontally right, the entire vertical origin translates left off-screen continuously, behaving like a physical marker anchored in the scrolling world. Adjusted `.roadmap-laser-1` to anchor rigidly at `left-0` with `w-[50vw]` to ensure a continuous, unbroken grid beam as the origin moves left.
+
+---
+
 ## 2026-03-13T15:05:00+08:00 — Mainframe Stack Pinning & SVG Routing
 
 ### Files Modified
 - `components/Mainframe.tsx` — Transformed into a pinned scroll timeline. Utilized `ScrollTrigger` to lock the vertical height of the section to `+=200%`. Injected an `<svg>` element acting as an intelligent routing line (`#mainframe-power-path`) that draws itself over scroll by manipulating `stroke-dashoffset`. Synchronized the drawing line with a chained timeline that sequentially cascades the `.mainframe-card` grid elements upward from off-screen into the viewport.
-
----
-
-## 2026-03-14T16:40:00+08:00 — Roadmap Mathematical Laser Handoff Fix
-
-### Files Modified
-- `components/Roadmap.tsx` — Reverted the horizontal CTA embed to keep components decoupled. Re-implemented the mathematical intersection logic from the Mainframe: the scroll pin `panWidth` is measured, and each card's physical X position is calculated against the horizontal laser's growth. The cards now perfectly ignite at the exact millisecond the laser tip touches their plug. Added massive trailing padding (`pr-[100vw]`) to the horizontal track so that after Phase 06 translates completely off-screen to the left, the user can continue scrolling. This allows the horizontal laser to continue its growth all the way to `right-0` (the right edge of the screen).
-- `app/page.tsx` — Re-mounted `<TerminalCTA />` below `<Roadmap />`.
-- `components/TerminalCTA.tsx` — As the user scrolls vertically down into this component, the pinned horizontal laser firing from `left-0` perfectly simulates the visual of the Roadmap laser entering the new screen.
-
----
-
-## 2026-03-14T17:15:00+08:00 — TerminalCTA Pixel Consistency & Roadmap Wipe
-
-### Files Modified
-- `components/Roadmap.tsx` — Discovered a 1-pixel vertical kink between the Roadmap and TerminalCTA lasers. TerminalCTA was using `-translate-y-1/2` on its `top-1/2` lines to perfectly center them on the axis, while Roadmap was missing this transform. Applied `-translate-y-1/2` to all 3 Roadmap lasers to mathematically align them perfectly to the same row of pixels across the component boundary.
-- Added a `headerRef` inside `Roadmap.tsx` and mapped it to a new `containerAnimation` ScrollTrigger. The "EXECUTION ROADMAP" title and the `nodeRef` checkpoint now elegantly fade to `opacity: 0` as the Terminal CTA element horizontally scrubs into the viewport, yielding the screen completely to the final CTA.
-
----
-
-## 2026-03-14T16:55:00+08:00 — TerminalCTA Horizontal Scroll Embedding
-
-### Files Modified
-- `components/TerminalCTA.tsx` — Refactored component to map its GSAP `scrollTrigger` dynamically. Added `containerTween?: gsap.core.Tween` interface. If passed, the component configures itself for a `containerAnimation` trigger (`start: "left 80%"`) instead of a vertical pin.
-- `components/Roadmap.tsx` — Imported `TerminalCTA` and rendered it as the final `w-[100vw]` element in the horizontal `.map` track. Captured the master horizontal GSAP tween in React state via `useState` and passed it down to `TerminalCTA`. This perfectly solves the user request: the components remain entirely separated in code, but functionally exist on the exact same horizontal continuous scroll timeline.
-- `app/page.tsx` — Removed standalone `<TerminalCTA />`.
-
----
-
-## 2026-03-14T16:50:00+08:00 — Roadmap GSAP Garbage Collection Fix
-
-### Files Modified
-- `components/Roadmap.tsx` — Fixed a severe React Strict Mode + GSAP bug where the page would jump erratically between Roadmap and TerminalCTA components. This was caused by wrapping the ScrollTrigger creation inside a `requestAnimationFrame` callback, which broke `@gsap/react`'s automatic cleanup context. On every hot reload or React re-render, permanent zombie ScrollTriggers were left behind, creating conflicting overlapping pinned layers. Refactored the timeline to run synchronously utilizing functional GSAP values (`() => -getPanWidth()`) paired with `invalidateOnRefresh: true` to securely let GSAP internally handle dynamic sizing natively within the `useGSAP` reactive context.
-
----
-
-## 2026-03-14T16:45:00+08:00 — Roadmap Component Split & Laser Physics Fix
-
-### Files Modified
-- `components/Roadmap.tsx` — Split the laser horizontally into a Two-Phase system using `containerAnimation` logic (returning to the physically accurate "Read Head" approach). `.roadmap-laser-1` acts as the read head, animating quickly from the left edge to the exact center of the screen as the user begins scrolling. As the `pr-[50vw]` track pans, Phase cards scroll horizontally and physically ignite *exactly* when they hit the center tip. Finally, `.roadmap-laser-2` is mapped specifically to Phase 06: the exact instant Phase 06 hits the center, Laser 2 begins scaling from center to the right edge (`right-0`), continuing its growth smoothly across the remaining remaining `50vw` track padding scroll distance.
-- `app/page.tsx` — Separated `<TerminalCTA />` back directly beneath `<Roadmap />`. As the user scrolls vertically into it, the pinned horizontal laser firing from `left-0` perfectly simulates the Roadmap laser seamlessly entering the new screen.
-
----
-
-## 2026-03-14T16:10:00+08:00 — Horizontal CTA Integration & Card Timing Fix
-
-### Files Modified
-- `components/Roadmap.tsx` — Complete rewrite. Split the laser into a TWO-PHASE system: `.roadmap-laser-1` (left to center, quick fill in 15% of scroll = the "read head") and `.roadmap-laser-2` (center to right edge, fires in the last 40% of scroll). Cards now activate correctly at `center center` via `containerAnimation`. Embedded the TerminalCTA as the LAST element inside the horizontal track (`w-screen`, `marginTop: -50vh`) so it scrolls in horizontally with zero vertical break. CTA activation uses `containerAnimation` with `start: "left 80%"`. Cryptographic scrambler inlined into the component.
-- `app/page.tsx` — Removed standalone `<TerminalCTA />` since it is now embedded in the Roadmap's horizontal track.
-
----
-
-## 2026-03-14T15:55:00+08:00 — Roadmap-to-TerminalCTA Seamless Laser Handoff
-
-### Files Modified
-- `components/Roadmap.tsx` — Extended the `.roadmap-laser` from `right-1/2` to `right-0` so it spans the full screen width. Re-synced its GSAP `scaleX` animation from `end: "+=400"` to `end: () => \`+=${panWidth}\`` so the laser tip draws proportionally across the entire horizontal scroll, reaching the right edge exactly when the last card exits. The laser now visually "exits" the Roadmap screen to the right.
-- `components/TerminalCTA.tsx` — No changes needed. Its laser already starts at `left-0 w-1/2`, which visually picks up exactly where the Roadmap laser exited on the right edge, creating a continuous line across the scene transition.
-
----
-
-## 2026-03-14T15:30:00+08:00 — Terminal CTA "Scene Cut" Redesign
-
-### Files Modified
-- `components/TerminalCTA.tsx` — Complete rewrite. Replaced the vertical-drop entrance with a horizontal "Scene Cut" from the left edge. Structural layout: `h-screen` pinned container, horizontal power line at `top-1/2 left-0 w-1/2` (stops dead center), `origin-left`. GSAP timeline: `pin: true`, `end: "+=1000"`, `scrub: 1`. Animation sequence: Step 1 — laser `scaleX: 0 → 1` shoots from left to center. Step 2 — CTA box unfolds at center with `scale`, `opacity`, and `#39FF14` glow. Step 3 — cryptographic scrambler fires simultaneously (`"<"` label) with the box unfold, locking into "INITIATE PROTOCOL // CONNECT WALLET". Corner wireframe accents added to the CTA box.
-
----
-
-## 2026-03-14T14:50:00+08:00 — Decryption Matrix CTA Architecture
-
-### Files Modified
-- `components/TerminalCTA.tsx` — [NEW] Engineered the final footer sequence from scratch. Built a 90-degree corner drop line that connects directly from the `Roadmap` laser tip at the top center of the viewport, dropping straight down into a "Core Receptacle". Wired a multi-stage GSAP timeline (`useGSAP`) that handles: 1) The line descent, 2) A pulse impact on the receptacle, 3) A geometric Grid Unfold (width/height expanding out from center), 4) A cryptographic text scrambler via `setInterval` switching random hex/symbols until snapping to "INITIATE PROTOCOL // CONNECT WALLET", and 5) A cyclic breathing `#39FF14` residual pulse on the container borders. 
-- `app/page.tsx` — Mounted `<TerminalCTA />` immediately below `<Roadmap />` without disrupting the existing timeline flows.
-
----
-
-## 2026-03-14T12:45:00+08:00 — Mainframe Laser Timing Sync
-
-### Files Modified
-- `components/Mainframe.tsx` — Rewrote the GSAP timeline card-ignition logic. Instead of hardcoded time offsets (`0.2 + (index * 0.6)`), implemented a dynamic mathematical sequence. It measures each card's real pixel distance (`getBoundingClientRect().left`) relative to the horizontal laser origin and calculates the exact `hitRatio`. Multiplies this ratio by the laser's 2-second travel duration, inserting the card's ignition animation into the timeline at the precise millisecond the physical tip of the laser geographically touches the card on screen (using label offset `` `laserStart+=${hitRatio * 2}` ``).
-
----
-
-## 2026-03-13T18:35:00+08:00 — Global Conduit Checkpoint Reconnection
-
-### Files Modified
-- `components/GlobalConduit.tsx` — Reverted from `h-[45vh]` back to `h-screen`. The line at `scaleY: 0.5` now equals exactly 50vh, matching the checkpoint at `top-1/2`.
-- `components/Mainframe.tsx` — Removed the finale animation that pushed `.global-power-line` from `scaleY: 0.5` to `1.0`, which caused excess bleed below the checkpoint.
-- `components/Roadmap.tsx` — Aligned all `top-[45%]` references (laser, node, track) to `top-1/2` so both the Mainframe and Roadmap checkpoints sit at the same 50vh position.
-
----
-
-## 2026-03-13T18:05:00+08:00 — Roadmap Visual Cleanup
-
-### Files Modified
-- `components/Roadmap.tsx` — Checkpoint node now starts as `bg-[#050505] border-white/20` (dim gray). Added `nodeRef` and a GSAP `ScrollTrigger` that scrubs the node to `bg-[#39FF14]` synchronized with the laser shoot sequence. Shifted the "EXECUTION ROADMAP" header from `left-8 lg:left-16` to `left-20 lg:left-28` to prevent crowding the vertical conduit line.
-- `components/GlobalConduit.tsx` — Capped the fixed vertical line height from `h-screen` to `h-[45vh]`, ensuring the green power line terminates exactly at the 45% viewport mark where the Roadmap checkpoint node sits, eliminating the excess green bleed below the node.
-
----
-
-## 2026-03-13T17:58:00+08:00 — Roadmap Laser "Read Head" Synchronization
-
-### Files Modified
-- `components/Roadmap.tsx` — Synchronized the horizontal laser by turning it into a fixed "Read Head". Modified `.roadmap-laser` width to `right-[50%]` and decoupled its shoot sequence from the master pinned timeline so it reaches `scaleX: 1` instantly upon section entry. Adjusted track offset to `pl-[100vw]` so cards start fully off-screen. Reconfigured `containerAnimation` to trigger precisely at `"center center"`—meaning a card exclusively hits its `opacity: 1` active state the exact millisecond its centered plug visually touches the geometric tip of the center-fixed laser.
-
----
-
-## 2026-03-13T17:45:00+08:00 — Roadmap Horizontal Circuit Array
-
-### Files Modified
-- `components/Roadmap.tsx` — Transformed into a premium horizontal "conveyor belt" experience. Hard-pinned the section (`h-screen`) and horizontally translated a `w-max` flex track leftward relative to vertical scroll distance. Embedded a static `.roadmap-laser` crossing the 45% screen mark. Expanded Roadmap to 6 comprehensive phases. Wired a GSAP `containerAnimation` Timeline that geometrically tracks each incoming card; as a card slides past the screen center, its localized vertical `plug` and border mathematically flash active `#39FF14`.
-
----
-
-## 2026-03-13T17:40:00+08:00 — Roadmap Vertical Stack Reversion
-
-### Files Modified
-- `components/Roadmap.tsx` — Purged the broken `pin: true` horizontal GSAP scrub layout that was hiding the cards off-screen. Reconstructed the component entirely into a vertically-stacked `flex-col` layout matching the `left-[8rem]/16` indentation of the `GlobalConduit`. Attached a new `useGSAP` intersecting sequence to fade/slide the Phase cards (`y: 0`, `opacity: 1`) independently as the user scrolls downwards alongside the global power line.
 
 ---
 

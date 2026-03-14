@@ -34,7 +34,7 @@ export default function GlobalConduit() {
     <>
       {/* --- THE UNIFIED BACKBONE --- */}
       {/* Background Track */}
-      <div className="hidden md:block fixed left-8 lg:left-16 top-0 h-screen w-[2px] bg-white/5 z-40 pointer-events-none" />
+      <div className="global-power-bg hidden md:block fixed left-8 lg:left-16 top-0 h-screen w-[2px] bg-white/5 z-40 pointer-events-none" />
       
       {/* Active Power Line (scaleY 0.5 = 50vh = checkpoint at top-1/2) */}
       <div 
@@ -43,3 +43,4 @@ export default function GlobalConduit() {
     </>
   );
 }
+
