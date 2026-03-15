@@ -39,6 +39,7 @@ export default function GlobalConduit() {
       {/* Active Power Line (scaleY 0.5 = 50vh = checkpoint at top-1/2) */}
       <div 
         className="global-power-line hidden md:block fixed left-8 lg:left-16 top-0 h-screen w-[2px] bg-[#39FF14] shadow-[0_0_10px_#39FF14] origin-top z-40 pointer-events-none" 
+        style={{ transform: 'scaleY(0)' }}
       />
     </>
   );

@@ -2,6 +2,69 @@
 
 ---
 
+## 2026-03-15T22:25:00+08:00 — Pre-Ignition Visual Fix (Roadmap Plugs/Nodes)
+
+### Files Modified
+- `components/Roadmap.tsx` — Fixed a visual bug where vertical `.plugs` and junction dots were permanently illuminated bright green before the horizontal timeline laser actually intersected them.
+  1. **Dynamic Junction Nodes**: Removed hardcoded `bg-[#39FF14]` from the absolute junction dots. Instantiated a new `nodesRef` GSAP array to track them alongside `plugsRef`.
+  2. **Muted Origins (`gsap.set`)**: Overrode the initial states so both elements start mechanically "powered down" — plugs default to `rgba(255,255,255,0.05)` and nodes to `rgba(255,255,255,0.2)`.
+  3. **Simultaneous Ignition**: Updated the `containerAnimation` scroll timeline to group the targets: `tl.to([plug, node], { backgroundColor: "#39FF14", boxShadow: "0 0 15px #39FF14", duration: 0.2 })`. Both elements now snap to bright `#39FF14` in exact unison with the phase card lighting.
+
+---
+
+## 2026-03-15T21:35:00+08:00 — TrackRef Alignment Fix (Roadmap)
+
+### Files Modified
+- `components/Roadmap.tsx` — Fixed a severe rendering disconnect where the staggered phase cards were pushed far below the horizontal timeline axis and the horizontal laser intersected the `Phase 02` card text itself rather than its circuit plug.
+  1. **Root Cause Analysis**: The `flex flex-row items-center` container mixed with the 100vh `TerminalCTA` and its `-mt-[50vh]` negative margin caused the flex track to expand to 100vh height and shift the `h-0` center anchor points down by 50vh, separating them from the 50vh laser origin.
+  2. **Track Alignment**: Reverted the `trackRef` container from `items-center` back to `items-start`, anchoring the top edge of the track natively at `top-1/2` alongside the laser line, regardless of child heights.
+  3. **Precision Bisect**: Added `z-[15] -translate-y-[1px]` to perfectly synchronize `trackRef`'s top edge flush with the mathematical center of the `h-[2px] -translate-y-1/2` laser origin.
+
+---
+
+## 2026-03-15T13:45:00+08:00 — Fixed Alternating Architecture Layout (Roadmap)
+
+### Files Modified
+- `components/Roadmap.tsx` — Fixed the vertical alignment glitch in the staggered alternating phase cards. Replaced the `flex-col mt-[30px]` approach with an absolute positioning wrapper (`h-0`) situated precisely on the horizontal `top-1/2` axis.
+  1. Adjusted item wrapper to `h-0` and `flex justify-center` so that it collapses perfectly to the horizontal timeline center.
+  2. Applied `absolute top-0` and `bottom-0` based on the `isBelow` logic so that the plugs physically originate directly *from* the center line rather than intersecting the block elements randomly.
+  3. Ensured `flex-col` is maintained for downward items, and `flex-col-reverse` for upward items so the `.plugs` directly connect the timeline and the phase cards.
+
+---
+
+## 2026-03-15T12:11:00+08:00 — Staggered Alternating Architecture (Roadmap)
+
+### Files Modified
+- `components/Roadmap.tsx` — Upgraded the phase card layout from a flat single-row (all cards below the horizontal laser) to a **staggered alternating architecture** using the array index:
+  1. **Track Container**: Changed `items-start` → `items-center` on the flex track to center card wrappers on the horizontal laser axis.
+  2. **Even indexes (0, 2, 4) — Cards below**: Wrapped in `flex-col` with `mt-[30px]` so the plug drops from the laser line down to the card top.
+  3. **Odd indexes (1, 3, 5) — Cards above**: Wrapped in `flex-col-reverse` with `mb-[30px]` so the plug shoots up from the laser line to the card bottom.
+  4. **Junction Nodes**: Flipped position dynamically — `bottom-0 translate-y-1/2` for below-cards, `top-0 -translate-y-1/2` for above-cards.
+  5. **GSAP Directional Offsets**: Replaced the bulk `gsap.set(cardsRef.current, { y: 30 })` with a per-card loop applying `y: 30` (even/below) and `y: -30` (odd/above). The ignition target of `y: 0` remains universal. No ScrollTrigger, `containerAnimation`, or timeline logic was altered.
+
+### State Variables Introduced
+- `isBelow` (derived from `index % 2 === 0`) — used in both the GSAP setup loop and the JSX mapping function.
+
+---
+
+## 2026-03-14T23:35:00+08:00 — Global Conduit Initial State Fix (FOUC)
+
+### Files Modified
+- `components/GlobalConduit.tsx` — Fixed a Flash of Unstyled Content (FOUC) on page load. The active power line (`.global-power-line`) was temporarily rendering at `scaleY(1)` before the React `useEffect` could mount and apply `gsap.set({ scaleY: 0 })`. Injected a native inline CSS style (`style={{ transform: 'scaleY(0)' }}`) onto the DOM element so it strictly renders empty natively before JS hydration.
+
+---
+
+## 2026-03-14T23:30:00+08:00 — Roadmap Visual Fidelity Overhaul
+
+### Files Modified
+- `components/Roadmap.tsx` — Executed a high-fidelity Web3 visual upgrade without altering core GSAP logic or structural DOM. 
+  1. **Background Texture**: Injected a subtle architectural grid pattern (`linear-gradient`) to the main `h-screen` container.
+  2. **Phase Cards (Glassmorphism & Hardware)**: Appended `relative` mapping. Integrated 4 `.pointer-events-none` `#39FF14/50` hardware brackets mimicking physical server racks. Expanded GSAP active tween to include `backgroundColor: rgba(57,255,20,0.05)` and a simulated glass-panel `boxShadow: inset 0 0 20px rgba(57,255,20,0.05)`.
+  3. **Junction Nodes**: Mounted physical-looking `w-[4px] h-[4px]` green junction nodes bridging the vertical `.plugs` directly into the card tops.
+  4. **Micro-Typography**: Added flashing `.micro-data` string (`[ SYS_INIT_OK ]`) that natively tweens from `text-white/20` to `#39FF14/70` exactly as the respective card ignites.
+
+---
+
 ## 2026-03-14T22:45:00+08:00 — World Coordinate Parallax Translation (Roadmap Setup)
 
 ### Files Modified
@@ -222,3 +285,23 @@
 ### Notes
 - `app/layout.tsx` remains a React Server Component (RSC). All client-side Web3 logic is confined to `app/providers.tsx`.
 - The mint button is rendered `disabled` with `cursor-not-allowed` — no smart contract interaction is wired yet.
+
+## [2026-03-15 22:39:28] Roadmap Visual Polish
+- Modified components/Roadmap.tsx:
+  - Muted horizontal background track to g-white/5 for better contrast.
+  - Implemented Plug Fill Animation: Wrapped plugs in a dimmed container with an inner fill overlay that uses origin-top or origin-bottom to simulate a growing progress line (scaleY: 0 -> 1).
+  - Enhanced Phase Card Glassmorphism with g-gradient-to-br from-white/[0.04] to-transparent, ackdrop-blur-md and adjusted GSAP active states for richer glow and deeper inner box-shadow.
+
+
+## [2026-03-15 22:48:11] Roadmap Glassmorphism & Scramble Effect
+- Modified components/Roadmap.tsx:
+  - Updated Phase card inactive container classes to g-black/40 backdrop-blur-md border border-white/5 removing solid backgrounds.
+  - Configured active GSAP tweens to transition the card to g-[#39FF14]/10, order-[#39FF14], and combining both inner and outer glowing drop shadows.
+  - Set .micro-data text tag [ SYS_INIT_OK ] to start hidden (opacity-0) and added a timed cryptographic text scrambling animation utilizing setInterval tied explicitly to the precise moment of card ignition in the GSAP timeline.
+
+
+## [2026-03-15 23:12:39] Roadmap Glassmorphism Alpha Correction
+- Modified components/Roadmap.tsx:
+  - Replaced solid/dark backgrounds on Phase cards with g-[#39FF14]/5 to expose the alpha channel.
+  - Boosted background distortion to ackdrop-blur-lg allowing the architectural grid to distinctly blur through the cards.
+
