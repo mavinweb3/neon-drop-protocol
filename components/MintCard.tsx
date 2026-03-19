@@ -16,6 +16,10 @@ import { client } from "@/lib/client";
 export default function MintCard() {
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const cubeRef = useRef<HTMLDivElement>(null);
+  const coreRef = useRef<HTMLDivElement>(null);
+  const btnContainerRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const activeChain = useActiveWalletChain();
   const switchChain = useSwitchActiveWalletChain();
@@ -53,6 +57,25 @@ export default function MintCard() {
     const yTo = gsap.quickTo(imageRef.current, "rotationX", { ease: "power3", duration: 0.6 });
     const imgXTo = gsap.quickTo(imageRef.current, "x", { ease: "power3", duration: 0.6 });
     const imgYTo = gsap.quickTo(imageRef.current, "y", { ease: "power3", duration: 0.6 });
+
+    // Crystal Core Animation Loop
+    if (cubeRef.current && coreRef.current) {
+      gsap.to(cubeRef.current, {
+        rotationX: 360,
+        rotationY: 360,
+        repeat: -1,
+        duration: 24,
+        ease: "none",
+      });
+      gsap.to(coreRef.current, {
+        scale: 1.2,
+        opacity: 0.7,
+        yoyo: true,
+        repeat: -1,
+        duration: 1.5,
+        ease: "sine.inOut",
+      });
+    }
 
     // Scroll Animation for Bento Cards
     gsap.fromTo(
@@ -100,9 +123,73 @@ export default function MintCard() {
     element.addEventListener("mousemove", handleMouseMove);
     element.addEventListener("mouseleave", handleMouseLeave);
 
+    const handleCubeEnter = () => {
+      gsap.to(".cube-face", { z: 110, duration: 0.6, ease: "power3.out", overwrite: "auto" });
+    };
+    
+    const handleCubeLeave = () => {
+      gsap.to(".cube-face", { z: 64, duration: 0.8, ease: "elastic.out(1, 0.7)", overwrite: "auto" });
+    };
+    
+    const imgEl = imageRef.current;
+    if (imgEl) {
+      imgEl.addEventListener("mouseenter", handleCubeEnter);
+      imgEl.addEventListener("mouseleave", handleCubeLeave);
+    }
+
+    // Magnetic Button Logic
+    const btnXTo = gsap.quickTo(btnRef.current, "x", { ease: "power3", duration: 0.1 });
+    const btnYTo = gsap.quickTo(btnRef.current, "y", { ease: "power3", duration: 0.1 });
+
+    const handleBtnMouseMove = (e: MouseEvent) => {
+      if (!btnRef.current || disabled) return;
+      const rect = btnRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const distanceX = e.clientX - centerX;
+      const distanceY = e.clientY - centerY;
+
+      let pullX = distanceX * 0.3;
+      let pullY = distanceY * 0.3;
+      
+      // Cap at 15px max pull
+      if (pullX > 15) pullX = 15;
+      if (pullX < -15) pullX = -15;
+      if (pullY > 15) pullY = 15;
+      if (pullY < -15) pullY = -15;
+
+      btnXTo(pullX);
+      btnYTo(pullY);
+    };
+
+    const handleBtnMouseLeave = () => {
+      if (!btnRef.current) return;
+      gsap.to(btnRef.current, {
+        x: 0,
+        y: 0,
+        ease: "elastic.out(1, 0.4)",
+        duration: 0.8,
+        overwrite: "auto"
+      });
+    };
+
+    const btnEl = btnContainerRef.current;
+    if (btnEl) {
+      btnEl.addEventListener("mousemove", handleBtnMouseMove);
+      btnEl.addEventListener("mouseleave", handleBtnMouseLeave);
+    }
+
     return () => {
       element.removeEventListener("mousemove", handleMouseMove);
       element.removeEventListener("mouseleave", handleMouseLeave);
+      if (imgEl) {
+        imgEl.removeEventListener("mouseenter", handleCubeEnter);
+        imgEl.removeEventListener("mouseleave", handleCubeLeave);
+      }
+      if (btnEl) {
+        btnEl.removeEventListener("mousemove", handleBtnMouseMove);
+        btnEl.removeEventListener("mouseleave", handleBtnMouseLeave);
+      }
     };
   }, { scope: cardRef });
 
@@ -117,25 +204,34 @@ export default function MintCard() {
 
           <div
             ref={imageRef}
-            className="relative z-10 w-full aspect-square max-w-[280px] rounded-2xl border border-dashed border-[#39FF14]/30 bg-[#39FF14]/5 flex items-center justify-center shadow-[0_0_40px_-10px_rgba(57,255,20,0.2)]"
+            className="relative z-10 w-full aspect-square max-w-[280px] rounded-2xl border border-dashed border-[#39FF14]/30 bg-[#39FF14]/5 flex items-center justify-center shadow-[0_0_40px_-10px_rgba(57,255,20,0.2)] overflow-hidden"
             style={{ transformStyle: "preserve-3d" }}
           >
-            {/* The tiltable NFT Placeholder */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-20 w-20 text-[#39FF14]/50 drop-shadow-[0_0_15px_rgba(57,255,20,0.5)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1}
-              style={{ transform: "translateZ(30px)" }} // Pops out slightly on Z axis during tilt
+            {/* 3D Stage Setup */}
+            <div 
+              ref={cubeRef} 
+              className="w-32 h-32 relative" 
+              style={{ transformStyle: "preserve-3d", transform: "translateZ(30px)" }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-              />
-            </svg>
+              {/* The Energy Core (Inside) */}
+              <div 
+                ref={coreRef}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{ transform: "translateZ(0)" }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-[#39FF14] drop-shadow-[0_0_15px_rgba(57,255,20,0.8)]">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+              </div>
+
+              {/* The Crystal Faces (Outside) */}
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "translateZ(64px)" }} />
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "rotateY(180deg) translateZ(64px)" }} />
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "rotateY(90deg) translateZ(64px)" }} />
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "rotateY(-90deg) translateZ(64px)" }} />
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "rotateX(90deg) translateZ(64px)" }} />
+              <div className="cube-face absolute inset-0 bg-[#39FF14]/5 border border-[#39FF14]/40 shadow-[inset_0_0_20px_rgba(57,255,20,0.15)] flex items-center justify-center backdrop-blur-sm" style={{ transform: "rotateX(-90deg) translateZ(64px)" }} />
+            </div>
           </div>
         </div>
 
@@ -191,15 +287,15 @@ export default function MintCard() {
           </div>
 
           {/* Action Area (CRT Glow + Glitch effect) */}
-          <div className="mt-2 relative">
+          <div className="mt-2 relative" ref={btnContainerRef}>
             {/* Ambient Background Glow behind button */}
-            <div className="absolute inset-0 bg-[#39FF14] rounded-xl blur-xl opacity-10 animate-pulse" />
+            <div className="absolute inset-0 bg-[#39FF14] rounded-xl blur-xl opacity-10 animate-pulse pointer-events-none" />
 
             <button
+              ref={btnRef}
               disabled={disabled}
               onClick={buttonAction}
-              className={`btn-glitch relative z-10 w-full ${cursorClass} rounded-xl bg-[#0F1A12] border ${borderClass} px-6 py-4.5 font-[family-name:var(--font-inter)] text-sm tracking-[0.2em] font-bold ${textClass} uppercase transition-all duration-300 shadow-[inset_0_0_20px_rgba(57,255,20,0.05),0_0_15px_rgba(57,255,20,0.1)] hover:shadow-[inset_0_0_30px_rgba(57,255,20,0.1),0_0_30px_rgba(57,255,20,0.3)] hover:bg-[#142618]`}
-              data-text={buttonText}
+              className={`relative z-10 w-full ${cursorClass} rounded-xl bg-[#0F1A12] border ${borderClass} px-6 py-4.5 font-[family-name:var(--font-inter)] text-sm tracking-[0.2em] font-bold ${textClass} uppercase transition-all duration-300 shadow-[0_0_15px_rgba(57,255,20,0.1)] hover:border-[#39FF14] hover:bg-[#39FF14]/10 hover:shadow-[inset_0_0_20px_rgba(57,255,20,0.2)]`}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -142,7 +142,7 @@ export default function Roadmap() {
         boxShadow: "0 0 15px rgba(57,255,20,0.15), inset 0 0 20px rgba(57,255,20,0.05)",
         duration: 0.3
       }, "-=0.05");
-      
+
       const microData = card.querySelector('.micro-data') as HTMLElement;
       if (microData) {
         tl.to(microData, { opacity: 1, duration: 0.1 }, "<");
@@ -241,9 +241,8 @@ export default function Roadmap() {
               key={card.id}
               className="relative flex justify-center w-[320px] md:w-[400px] h-0"
             >
-              <div className={`absolute flex items-center w-full ${
-                isBelow ? 'top-0 flex-col' : 'bottom-0 flex-col-reverse'
-              }`}>
+              <div className={`absolute flex items-center w-full ${isBelow ? 'top-0 flex-col' : 'bottom-0 flex-col-reverse'
+                }`}>
                 {/* The Circuit Plug */}
                 <div className="relative flex flex-col items-center">
                   <div
@@ -251,38 +250,36 @@ export default function Roadmap() {
                   >
                     <div
                       ref={(el) => { plugsRef.current[index] = el; }}
-                      className={`absolute inset-0 w-full h-full bg-[#39FF14] ${
-                        isBelow ? 'origin-top' : 'origin-bottom'
-                      }`}
+                      className={`absolute inset-0 w-full h-full bg-[#39FF14] ${isBelow ? 'origin-top' : 'origin-bottom'
+                        }`}
                     />
                   </div>
                   {/* Junction Node — flips position based on card direction */}
                   <div
                     ref={(el) => { nodesRef.current[index] = el; }}
-                    className={`absolute w-[4px] h-[4px] rounded-full z-10 ${
-                      isBelow ? 'bottom-0 translate-y-1/2' : 'top-0 -translate-y-1/2'
-                    }`} 
+                    className={`absolute w-[4px] h-[4px] rounded-full z-10 ${isBelow ? 'bottom-0 translate-y-1/2' : 'top-0 -translate-y-1/2'
+                      }`}
                   />
                 </div>
                 {/* The Phase Card */}
                 <div
                   ref={(el) => { cardsRef.current[index] = el; }}
-                  className="relative w-full bg-[#39FF14]/5 backdrop-blur-lg border border-white/5 p-8 rounded-sm text-left overflow-hidden"
+                  className="relative w-full bg-[#39FF14]/5 border border-white/5 p-8 rounded-sm text-left overflow-hidden"
                 >
-                {/* Hardware Accents */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#39FF14]/50 pointer-events-none" />
-                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#39FF14]/50 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#39FF14]/50 pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#39FF14]/50 pointer-events-none" />
+                  {/* Hardware Accents */}
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#39FF14]/50 pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#39FF14]/50 pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#39FF14]/50 pointer-events-none" />
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#39FF14]/50 pointer-events-none" />
 
-                {/* Micro-Typography */}
-                <div className="micro-data font-mono text-[10px] tracking-widest text-[#39FF14] opacity-0 mb-3">[ SYS_INIT_OK ]</div>
+                  {/* Micro-Typography */}
+                  <div className="micro-data font-mono text-[10px] tracking-widest text-[#39FF14] opacity-0 mb-3">[ SYS_INIT_OK ]</div>
 
-                <span className="font-inter text-[#39FF14] text-xs tracking-widest uppercase mb-4 block">Phase {card.id}</span>
-                <h3 className="text-2xl font-geist text-white font-bold mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">{card.title}</h3>
-                <p className="text-white/50 font-inter text-sm leading-relaxed">{card.desc}</p>
+                  <span className="font-inter text-[#39FF14] text-xs tracking-widest uppercase mb-4 block">Phase {card.id}</span>
+                  <h3 className="text-2xl font-geist text-white font-bold mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">{card.title}</h3>
+                  <p className="text-white/50 font-inter text-sm leading-relaxed">{card.desc}</p>
+                </div>
               </div>
-            </div>
             </div>
           );
         })}
